@@ -6,9 +6,10 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
+import androidx.drawerlayout.widget.DrawerLayout
 import androidx.recyclerview.widget.RecyclerView
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import com.nokbita.weatherapp.R
-import com.nokbita.weatherapp.logic.Repository
 import com.nokbita.weatherapp.logic.dao.PlaceDao
 import com.nokbita.weatherapp.logic.model.PlaceResponse
 import com.nokbita.weatherapp.ui.weather.WeatherActivity
@@ -35,22 +36,36 @@ class PlaceRecyclerViewAdapter(private val fragment: PlaceFragment,
             LayoutInflater.from(parent.context).inflate(R.layout.item_place_recyclerview, parent, false)
         val viewHolder = ViewHolder(itemPlaceRecyclerView)
 
+        // 点击子项
         viewHolder.itemView.setOnClickListener {
             val position = viewHolder.adapterPosition
             val place = placeList[position]
             Log.d("PlaceRecyclerViewAdapter,place: ", "${place}")
 
+            val activity = fragment.activity
+            if (activity is WeatherActivity) {
+                Log.d("PlaceRecyclerViewAdapter","我是WeatherActivity")
+                val drawerLayout = activity.findViewById<DrawerLayout>(R.id.drawerLayoutXML)
+                drawerLayout.closeDrawers()
+                activity.weatherViewModel.placeName = place.placeName
+                activity.weatherViewModel.coordinatesLng = place.coordinates.lng
+                activity.weatherViewModel.coordinatesLat = place.coordinates.lat
+                activity.refreshWeatherResponse(
+                    activity.findViewById<SwipeRefreshLayout>(R.id.swipeRefreshLayout))
+            } else {
+                Log.d("PlaceRecyclerViewAdapter","我是MainActivity")
+                // 启动天气页面
+                WeatherActivity.startSelf(
+                    parent.context,
+                    place.placeName,
+                    place.coordinates.lng,
+                    place.coordinates.lat)
+                fragment.activity?.finish()
+            }
+
             // 存储地点
             PlaceDao.savePlace(place)
             Log.d("PlaceRecyclerViewAdapter","地点已存储")
-
-            // 启动天气页面
-            WeatherActivity.startSelf(
-                parent.context,
-                place.placeName,
-                place.coordinates.lng,
-                place.coordinates.lat)
-            fragment.activity?.finish()
         }
         return viewHolder
     }

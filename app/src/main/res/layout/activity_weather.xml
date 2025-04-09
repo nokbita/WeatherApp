@@ -1,21 +1,51 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ScrollView
+<androidx.drawerlayout.widget.DrawerLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
-    android:id="@+id/weatherXML"
+    android:id="@+id/drawerLayoutXML"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:scrollbars="none"
-    android:overScrollMode="always"
-    android:visibility="invisible">
+    android:layout_height="match_parent">
 
-    <LinearLayout
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:orientation="vertical">
+    <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+        android:id="@+id/swipeRefreshLayout"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
 
-        <include layout="@layout/realtime" />
-        <include layout="@layout/forecast" />
-        <include layout="@layout/life_index" />
-    </LinearLayout>
+        <ScrollView
+            android:id="@+id/weatherLayout"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:scrollbars="none"
+            android:overScrollMode="always"
+            android:visibility="invisible">
 
-</ScrollView>
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
+
+                <include layout="@layout/realtime" />
+                <include layout="@layout/forecast" />
+                <include layout="@layout/life_index" />
+            </LinearLayout>
+        </ScrollView>
+    </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
+
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_gravity="start"
+        android:clickable="true"
+        android:focusable="true"
+        android:background="@color/alex">
+
+        <fragment
+            android:id="@+id/placeFragment"
+            android:name="com.nokbita.weatherapp.ui.place.PlaceFragment"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" />
+
+
+    </FrameLayout>
+
+</androidx.drawerlayout.widget.DrawerLayout>
+

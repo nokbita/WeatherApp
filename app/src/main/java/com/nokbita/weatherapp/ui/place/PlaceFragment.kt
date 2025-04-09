@@ -14,6 +14,7 @@ import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.nokbita.weatherapp.MainActivity
 import com.nokbita.weatherapp.R
 import com.nokbita.weatherapp.isConnectedNet
 import com.nokbita.weatherapp.logic.dao.PlaceDao
@@ -31,7 +32,6 @@ class PlaceFragment: Fragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-
         val view = inflater.inflate(R.layout.fragment_place, container, false)
         // 此处为placeFragmentXML
         Log.d("PlaceFragment","01此处的view是：${view.id}")
@@ -45,14 +45,13 @@ class PlaceFragment: Fragment() {
         Log.d("PlaceFragment","02此处的view是：${view.id}")
 
         // 如果地点已经存储，则直接跳转到天气显示页面
-        if (PlaceDao.isPlaceSaved()) {
+        if (activity is MainActivity && PlaceDao.isPlaceSaved()) {
             val savedPlace = PlaceDao.getSavedPlace()
             WeatherActivity.startSelf(this.requireActivity(),savedPlace.placeName,
                 savedPlace.coordinates.lng, savedPlace.coordinates.lat)
             activity?.finish()
             return
         }
-
 
         val linearLayoutManager = LinearLayoutManager(activity)
         placeRecyclerViewAdapter = PlaceRecyclerViewAdapter(this, placeViewModel.placeList)
@@ -64,6 +63,7 @@ class PlaceFragment: Fragment() {
 
         val searchPlace = view.findViewById<EditText>(R.id.searchPlaceEdit)
         val bgImageView = view.findViewById<ImageView>(R.id.bgImageView)
+
         searchPlace.addTextChangedListener { editable ->
             val query = editable.toString()
 

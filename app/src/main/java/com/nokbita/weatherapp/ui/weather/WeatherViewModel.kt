@@ -8,7 +8,6 @@ import androidx.lifecycle.switchMap
 import com.nokbita.weatherapp.logic.Repository
 import com.nokbita.weatherapp.logic.model.PlaceResponse
 import com.nokbita.weatherapp.logic.model.WeatherResponse
-import kotlin.math.log
 
 class WeatherViewModel: ViewModel() {
 
@@ -21,7 +20,7 @@ class WeatherViewModel: ViewModel() {
         coordinates -> Repository.refreshWeatherResponse2(coordinates.lng, coordinates.lat)
     }
 
-    var placeName2 = ""
-    var coordinatesLng2 = ""
-    var coordinatesLat2 = ""
+    var placeName = ""
+    var coordinatesLng = ""
+    var coordinatesLat = ""
 }

@@ -7,6 +7,8 @@ import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
+import android.view.inputmethod.InputMethodManager
+import android.widget.Button
 import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.RelativeLayout
@@ -15,9 +17,12 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.view.GravityCompat
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import androidx.drawerlayout.widget.DrawerLayout
 import androidx.lifecycle.ViewModelProvider
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import com.nokbita.weatherapp.R
 import com.nokbita.weatherapp.logic.model.WeatherResponse
 import com.nokbita.weatherapp.logic.model.getSky
@@ -48,6 +53,12 @@ class WeatherActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+        setContentView(R.layout.activity_weather)
+        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.weatherLayout)) { v, insets ->
+            val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
+            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
+            insets
+        }
 
         // 设置activity可在状态栏中显示，并将状态栏设置为透明
         val decorView = window.decorView
@@ -55,24 +66,51 @@ class WeatherActivity : AppCompatActivity() {
             View.SYSTEM_UI_FLAG_FULLSCREEN or View.SYSTEM_UI_FLAG_LAYOUT_STABLE
         window.statusBarColor = Color.TRANSPARENT
 
-        setContentView(R.layout.activity_weather)
-        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.weatherXML)) { v, insets ->
-            val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
-            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
-            insets
-        }
 
+        // 将搜索城市功能设置为抽屉
+        val drawerLayout = findViewById<DrawerLayout>(R.id.drawerLayoutXML)
+        findViewById<Button>(R.id.navBtn).setOnClickListener {
+            drawerLayout.openDrawer(GravityCompat.START)
+        }
+        drawerLayout.addDrawerListener(object: DrawerLayout.DrawerListener{
+            override fun onDrawerSlide(drawerView: View, slideOffset: Float) {
+            }
+
+            override fun onDrawerOpened(drawerView: View) {
+            }
+
+            override fun onDrawerClosed(drawerView: View) {
+                // 抽屉关闭时，收起输入法
+                val inputMethodManager = getSystemService(Context.INPUT_METHOD_SERVICE) as
+                        InputMethodManager
+                inputMethodManager.hideSoftInputFromWindow(drawerView.windowToken,
+                    InputMethodManager.HIDE_NOT_ALWAYS)
+            }
+
+            override fun onDrawerStateChanged(newState: Int) {
+            }
+        })
 
         // 如果placeName等变量中没有数据，则从intent中获取数据
-        if (weatherViewModel.placeName2.isEmpty() ||
-            weatherViewModel.coordinatesLng2.isEmpty() ||
-            weatherViewModel.coordinatesLat2.isEmpty()) {
-            weatherViewModel.placeName2 = intent.getStringExtra("placeName") ?: ""
-            weatherViewModel.coordinatesLng2 = intent.getStringExtra("coordinatesLng") ?: ""
-            weatherViewModel.coordinatesLat2 = intent.getStringExtra("coordinatesLat") ?: ""
+        if (weatherViewModel.placeName.isEmpty() ||
+            weatherViewModel.coordinatesLng.isEmpty() ||
+            weatherViewModel.coordinatesLat.isEmpty()) {
+            weatherViewModel.placeName = intent.getStringExtra("placeName") ?: ""
+            weatherViewModel.coordinatesLng = intent.getStringExtra("coordinatesLng") ?: ""
+            weatherViewModel.coordinatesLat = intent.getStringExtra("coordinatesLat") ?: ""
             Log.d("WeatherActivity, intent：","${intent.getStringExtra("coordinatesLng")}, " +
                     "${intent.getStringExtra("coordinatesLat")}, " +
                     "${intent.getStringExtra("placeName")}")
+        }
+
+        // 获取刷新组件
+        val swipeRefreshLayout = findViewById<SwipeRefreshLayout>(R.id.swipeRefreshLayout)
+        swipeRefreshLayout.setColorSchemeResources(R.color.alex)
+        refreshWeatherResponse(swipeRefreshLayout)
+
+        // 监听刷新事件
+        swipeRefreshLayout.setOnRefreshListener {
+            refreshWeatherResponse(swipeRefreshLayout)
         }
 
         // 观察weatherResponseLiveData
@@ -85,23 +123,29 @@ class WeatherActivity : AppCompatActivity() {
                 result.exceptionOrNull()?.printStackTrace()
                 Log.d("WeatherActivity: ","${result.exceptionOrNull()?.toString()}")
             }
+            swipeRefreshLayout.isRefreshing = false
         }
+    }
 
+    // 天气刷新方法
+    fun refreshWeatherResponse(swipeRefreshLayout: SwipeRefreshLayout) {
         // 获取天气信息
         weatherViewModel.refreshWeatherResponse(
-            weatherViewModel.coordinatesLng2,
-            weatherViewModel.coordinatesLat2
+            weatherViewModel.coordinatesLng,
+            weatherViewModel.coordinatesLat
         )
+        swipeRefreshLayout.isRefreshing = true
     }
 
     // 将weatherResponse展示在界面上
     fun setUIByWeather(weatherResponse: WeatherResponse) {
         val realtime = weatherResponse.realtime
         val daily = weatherResponse.daily
+
         // 设置realtime.xml
         findViewById<RelativeLayout>(R.id.realtimeXML)
             .setBackgroundResource(getSky(realtime.skycon).bg)
-        findViewById<TextView>(R.id.placeName).text = weatherViewModel.placeName2
+        findViewById<TextView>(R.id.placeName).text = weatherViewModel.placeName
         findViewById<TextView>(R.id.currentTemp).text =
             "${String.format("%.1f", realtime.apparentTemperature)} ℃"
         findViewById<TextView>(R.id.currentSkycon).text = getSky(realtime.skycon).info
@@ -145,7 +189,7 @@ class WeatherActivity : AppCompatActivity() {
         findViewById<TextView>(R.id.carWashingText).text = lifeIndex.carWashing[0].desc
 
         // 显示activity_weather.xml
-        findViewById<ScrollView>(R.id.weatherXML).visibility = View.VISIBLE
+        findViewById<ScrollView>(R.id.weatherLayout).visibility = View.VISIBLE
     }
 
 }
