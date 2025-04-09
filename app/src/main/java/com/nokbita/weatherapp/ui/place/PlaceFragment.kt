@@ -44,6 +44,12 @@ class PlaceFragment: Fragment() {
         // 猜测为placeFragmentXML，猜测正确！！
         Log.d("PlaceFragment","02此处的view是：${view.id}")
 
+        // 每次启动时检查网络状态
+        if (!isConnectedNet()) {
+            Toast.makeText(activity, "网络未连接", Toast.LENGTH_SHORT).show()
+            return
+        }
+
         // 如果地点已经存储，则直接跳转到天气显示页面
         if (activity is MainActivity && PlaceDao.isPlaceSaved()) {
             val savedPlace = PlaceDao.getSavedPlace()
