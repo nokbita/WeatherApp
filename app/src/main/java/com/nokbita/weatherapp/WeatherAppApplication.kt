@@ -3,8 +3,6 @@ package com.nokbita.weatherapp
 import android.annotation.SuppressLint
 import android.app.Application
 import android.content.Context
-import android.net.ConnectivityManager
-import android.net.NetworkCapabilities
 
 class WeatherAppApplication : Application() {
 

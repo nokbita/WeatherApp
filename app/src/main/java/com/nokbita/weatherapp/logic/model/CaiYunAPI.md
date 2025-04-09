@@ -45,13 +45,13 @@ https://api.caiyunapp.com/v2/place?query=${place}&token=${TOKEN_CAIYUN}&lang=${l
 
 # 实况API
 
-https://api.caiyunapp.com/${TOKEN_CAIYUN}/${X},${Y}/realtime
+https://api.caiyunapp.com/v2.6/${TOKEN_CAIYUN}/${lng},${lat}/realtime
 
 根据经纬度，确定查询的位置。
 
 1. {TOKEN_CAIYUN} ： 彩云天气的Token
-2. {X} ： X坐标，可能是纬度
-3. {Y} ： Y坐标，可能是经度
+2. {lng} ： 纬度
+3. {lat} ： 经度
 
 ## 响应
 
@@ -131,7 +131,7 @@ https://api.caiyunapp.com/${TOKEN_CAIYUN}/${X},${Y}/realtime
 
 # 预报-天气级API
 
-https://api.caiyunapp.com/v2.6/${TOKEN_CAIYUN}/${X},${Y}/daily?dailysteps=${num}
+https://api.caiyunapp.com/v2.6/${TOKEN_CAIYUN}/${lng},${lat}/daily?dailysteps=${num}
 
 1. dailysteps ： 控制返回多少天的数据，范围为[1, 15]。即：1表示查询未来一天的天气，3表示查询未来3天的天气。
 

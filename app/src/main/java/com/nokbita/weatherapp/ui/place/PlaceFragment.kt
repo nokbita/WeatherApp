@@ -16,11 +16,13 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.nokbita.weatherapp.R
 import com.nokbita.weatherapp.isConnectedNet
-import com.nokbita.weatherapp.logic.model.PlacesResponse
+import com.nokbita.weatherapp.logic.dao.PlaceDao
+import com.nokbita.weatherapp.logic.model.PlaceResponse
+import com.nokbita.weatherapp.ui.weather.WeatherActivity
 
 class PlaceFragment: Fragment() {
     // 可封装
-    val viewModel by lazy { ViewModelProvider(this).get(PlaceViewModel::class.java) }
+    val placeViewModel by lazy { ViewModelProvider(this).get(PlaceViewModel::class.java) }
 
     private lateinit var placeRecyclerViewAdapter: PlaceRecyclerViewAdapter
 
@@ -29,20 +31,33 @@ class PlaceFragment: Fragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
+
         val view = inflater.inflate(R.layout.fragment_place, container, false)
         // 此处为placeFragmentXML
         Log.d("PlaceFragment","01此处的view是：${view.id}")
+
         return view
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        // 猜测为placeFragmentXML，猜测正确！！
+        Log.d("PlaceFragment","02此处的view是：${view.id}")
+
+        // 如果地点已经存储，则直接跳转到天气显示页面
+        if (PlaceDao.isPlaceSaved()) {
+            val savedPlace = PlaceDao.getSavedPlace()
+            WeatherActivity.startSelf(this.requireActivity(),savedPlace.placeName,
+                savedPlace.coordinates.lng, savedPlace.coordinates.lat)
+            activity?.finish()
+            return
+        }
+
 
         val linearLayoutManager = LinearLayoutManager(activity)
-        placeRecyclerViewAdapter = PlaceRecyclerViewAdapter(this, viewModel.placeList)
-        // 猜测为placeFragmentXML
-        Log.d("PlaceFragment","02此处的view是：${view.id}")
+        placeRecyclerViewAdapter = PlaceRecyclerViewAdapter(this, placeViewModel.placeList)
         val recyclerView = view.findViewById<RecyclerView>(R.id.recyclerView)
+        // 此处为recyclerView
         Log.d("PlaceFragment","recyclerView是：${recyclerView.id}")
         recyclerView.layoutManager = linearLayoutManager
         recyclerView.adapter = placeRecyclerViewAdapter
@@ -58,27 +73,27 @@ class PlaceFragment: Fragment() {
             }
 
             if (query.isNotEmpty()) {
-                viewModel.searchPlaces(query)
+                placeViewModel.searchPlaces(query)
             } else {
                 recyclerView.visibility = View.GONE
                 bgImageView.visibility = View.VISIBLE
-                viewModel.placeList.clear()
+                placeViewModel.placeList.clear()
             }
         }
 
-        viewModel.placeLiveData.observe(viewLifecycleOwner, Observer{ result ->
-            val places: List<PlacesResponse.Place>? = result.getOrNull()
+        placeViewModel.places.observe(viewLifecycleOwner, Observer{ result ->
+            val places: List<PlaceResponse.Place>? = result.getOrNull()
             Log.d("PlaceFragment", places.toString())
             if (places != null) {
                 recyclerView.visibility = View.VISIBLE
                 bgImageView.visibility = View.GONE
-                viewModel.placeList.clear()
-                viewModel.placeList.addAll(places)
+                placeViewModel.placeList.clear()
+                placeViewModel.placeList.addAll(places)
                 placeRecyclerViewAdapter.notifyDataSetChanged()
             } else {
                 // 如果数据为空则说明发生了异常
                 // 可封装
-                Toast.makeText(activity, "未查询到任何地点", Toast.LENGTH_SHORT).show()
+                Toast.makeText(activity, "地点信息获取失败", Toast.LENGTH_SHORT).show()
                 result.exceptionOrNull()?.printStackTrace()
             }
         })

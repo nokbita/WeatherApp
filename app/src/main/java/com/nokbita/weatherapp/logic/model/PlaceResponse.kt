@@ -4,7 +4,7 @@ import com.google.gson.annotations.SerializedName
 
 
 // 该实体类表示地点
-data class PlacesResponse(
+data class PlaceResponse(
     val status: String,
     val query: String,
     val places: List<Place>) {
