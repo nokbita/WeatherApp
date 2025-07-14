@@ -9,7 +9,7 @@ class WeatherAppApplication : Application() {
     companion object {
         @SuppressLint("StaticFieldLeak")
         lateinit var context: Context
-        const val TOKEN_CAIYUN = "5XvQj6lTcukm6Iaj"
+        const val TOKEN_CAIYUN = "5Xvxxxxxx"
         const val LANGUAGE = "zh_CN"
     }
 
